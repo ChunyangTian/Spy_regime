@@ -1,4 +1,4 @@
-# Predicting S&P 500 Market Regimes Using Hidden Markov Model
+# Detecting S&P 500 Market Regimes Using Hidden Markov Model
 
 **Author:** Chunyang Tian 
 **Date:** May 2026  
@@ -9,7 +9,7 @@ historical crises.
 ## Purpose & Outcome
 
 This model aim to find current US stock market status. S&P 500 (SPY) is used as 
-the reference for this model, but other market ETFs are also accept for this model.
+the reference for this model, but other market ETFs also work with this model.
 
 After test with BIC (Bayesian Information Criterion), we found 4 regime is the 
 best balance for our data. They are called "Regime 0/1/2/3" in the code, and their 
@@ -31,7 +31,7 @@ The 4 regimes can be interpret as:
 1. Download SPY daily data from Yahoo Finance (2004 to 2026).
 2. Calculate two features for each day:
    - Daily log return: `log(Close_today / Close_yesterday)`
-   - Annualized realized volatility: rolling 21-day standard deviation × sqrt(252)
+   - Annualized realized volatility: rolling 21-day standard deviation * sqrt(252)
 3. Use these two features to fit a Gaussian Hidden Markov Model.
 4. The HMM assume the market is in one of several "hidden states" each day, and 
    each state produce return and volatility from its own gaussian distribution. 
@@ -40,9 +40,9 @@ The 4 regimes can be interpret as:
 ## Why I choose 4 regimes (BIC test)
 
 I tested k = 2, 3, 4, 5 by minimizing BIC (lower is better)
-k = 5 actually crashed because one regime's covariance matrix become non-positive-definite 
-— this means the data is not enough to support 5 separate states. So I think this 
-is also a evidence that 4 regimes is the most complex model the data can support.
+k = 5 actually crashed because one regime's covariance matrix become non-positive-definite. 
+This may mean the data is not enough to support 5 separate states, or the fitting just 
+got stuck. So among the models that fit, 4 regimes has the lowest BIC, and I stop at 4.
 
 **About BIC = -2 * log_likelihood + n_parameters * np.log(len(X)):**
 
@@ -58,7 +58,7 @@ to prevent overfitting. n_parameter counts the parameters in our HMM:
 1. **Initial probability** (which regime on day 1): we need n-1 because once you 
 know n-1 of them, the last one is automatic since sum of probability is 1.
 
-2. **Transition matrix** (regime today → tomorrow): take n=3 as example, today 
+2. **Transition matrix** (regime today to tomorrow): take n=3 as example, today 
 has 3 possibility, tomorrow also 3, so the matrix is 3*3 = 9. But each row sum 
 to 1, same freedom concept, so each row only n-1 = 2 free. Total: n * (n-1).
 
@@ -75,17 +75,17 @@ I checked how many days in known crisis windows are labeled as the crisis regime
 
 | Crisis | Days in crisis regime | Capture rate |
 |---|---|---|
-| 2008 GFC (Sep 2008 – Mar 2009) | 137/146 | 94% |
-| 2020 COVID (Feb 20 – Apr 30) | 43/50 | 86% |
-| 2022 Bear Market (Apr – Oct) | 21/147 | 14% |
-| 2025 Tariff Selloff (Apr – Jun) | 25/62 | 40% |
-| 2026 Iran War (Feb 28 – May 7) | 0/43 | 0% |
+| 2008 GFC (Sep 2008 - Mar 2009) | 137/146 | 94% |
+| 2020 COVID (Feb 20 - Apr 30) | 43/50 | 86% |
+| 2022 Bear Market (Apr - Oct) | 21/147 | 14% |
+| 2025 Tariff Selloff (Apr - Jun) | 25/62 | 40% |
+| 2026 Iran War (Feb 28 - May 7) | 0/43 | 0% |
 
 This result is interesting and not what I expect at first. The model capture sharp 
 crashes very well (2008, 2020) but miss slow bear market (2022) and geopolitical 
 events (2026 Iran War). 
 
-The 2026 Iran War result is most surprising — even though the war is a serious 
+The 2026 Iran War result is most surprising. Even though the war is a serious 
 event with oil supply disruption, S&P 500 actually reached new record high during 
 this window (over 7000), and the volatility stay around 11-18%, which is far from 
 crisis level (~50% vol). 
@@ -96,7 +96,7 @@ short), the model won't classify it as crisis, even if the news is very serious.
 
 ## Limitations
 
-A few things I want to be honest about:
+Some limits I know about:
 
 1. **This is descriptive, not predictive.** The model is fit on the entire 2004-2026 
    data, so when it says "this day is crisis regime", it already saw the future when 
@@ -113,7 +113,7 @@ A few things I want to be honest about:
    VIX (option implied vol), credit spreads, or news-based indicators.
 
 4. **The label of regimes (0/1/2/3) is random.** HMM doesn't know which regime is 
-   "crisis" — I have to find it manually by looking at which regime has highest 
+   "crisis", so I have to find it manually by looking at which regime has highest 
    return std. Every time the random_state change, the labels may switch.
 
 ## Future work
